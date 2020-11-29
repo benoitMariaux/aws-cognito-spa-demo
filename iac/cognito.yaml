@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Cognito Stack
+Parameters:
+  AppName:
+    Type: String
+    Description: Unique App Name for Cognito Resources
+
+Resources:
+  UserPool:
+    Type: "AWS::Cognito::UserPool"
+    Properties:
+      UserPoolName: !Sub ${AppName}-user-pool
+      UsernameAttributes:
+        - email
+      UsernameConfiguration:
+        CaseSensitive: False
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: True
+          RequireNumbers: True
+          RequireSymbols: False
+          RequireUppercase: True
+          TemporaryPasswordValidityDays: 1
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: True
+
+  UserPoolClient:
+    Type: "AWS::Cognito::UserPoolClient"
+    Properties:
+      ClientName: !Sub ${AppName}-client
+      SupportedIdentityProviders:
+        - COGNITO
+      GenerateSecret: True
+      AllowedOAuthFlowsUserPoolClient: True
+      AllowedOAuthFlows:
+        - implicit
+      AllowedOAuthScopes:
+        - email
+        - openid
+      CallbackURLs:
+        - http://localhost:8080/login/oauth2/code/cognito
+      LogoutURLs:
+        - http://localhost:8080/logout
+      PreventUserExistenceErrors: ENABLED
+      UserPoolId: !Ref UserPool
+  
+  UserPoolDomain:
+    Type: "AWS::Cognito::UserPoolDomain"
+    Properties:
+      Domain: !Sub ${AppName}-domain-wxcvbn
+      UserPoolId: !Ref UserPool
+
+Outputs:
+  UserPoolId:
+    Value: !Ref UserPool
+    Export:
+      Name: "UserPool::Id"
+  UserPoolClientId:
+    Value: !Ref UserPoolClient
+    Export:
+      Name: "UserPoolClient::Id"
+  AuthDomainName:
+    Value: !Ref UserPoolDomain
+    Export:
+      Name: "UserPoolAuthDomain::Name"
