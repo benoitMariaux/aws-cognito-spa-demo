@@ -62,7 +62,7 @@ Outputs:
     Value: !Ref UserPoolClient
     Export:
       Name: "UserPoolClient::Id"
-  AuthDomainName:
+  AppDomainName:
     Value: !Ref UserPoolDomain
     Export:
-      Name: "UserPoolAuthDomain::Name"
+      Name: UserPoolDomain::Id"
